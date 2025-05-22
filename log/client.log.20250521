@@ -1,0 +1,218 @@
+[2025-05-21 00:09:39.671305129 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:09:39.749923234 +08:00 INFO] this account require 2fa
+[2025-05-21 00:09:40.005435513 +08:00 INFO] [future_option_mapping]: 192.060296ms
+[2025-05-21 00:09:40.084674532 +08:00 INFO] [future_option_mapping]: 56.222005ms
+[2025-05-21 00:09:40.334851071 +08:00 INFO] [future_option_mapping]: 249.500046ms
+[2025-05-21 00:09:40.597870105 +08:00 INFO] [future_option_mapping]: 59.315398ms
+[2025-05-21 00:09:40.599758864 +08:00 INFO] [unrealized gains and loses] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 00:09:40.728398776 +08:00 INFO] [inventory_stock_detail_result]: 128.615622ms
+[2025-05-21 00:09:40.733811078 +08:00 INFO] [logout] user manually logout
+[2025-05-21 00:27:31.585492432 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:27:31.671238646 +08:00 INFO] this account require 2fa
+[2025-05-21 00:27:31.986058243 +08:00 INFO] [future_option_mapping]: 234.186546ms
+[2025-05-21 00:27:32.067384615 +08:00 INFO] [future_option_mapping]: 78.018151ms
+[2025-05-21 00:27:32.331668680 +08:00 INFO] [future_option_mapping]: 264.05833ms
+[2025-05-21 00:27:32.469968276 +08:00 INFO] [future_option_mapping]: 82.327832ms
+[2025-05-21 00:28:00.519203895 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Sell, stock_no: "00652", price_type: Limit, price: Some("36.8"), quantity: 967, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 00:28:00.612380742 +08:00 INFO] [place_order]: 93.649216ms
+[2025-05-21 00:28:00.618393364 +08:00 INFO] [logout] user manually logout
+[2025-05-21 00:28:06.899697563 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:28:06.988519850 +08:00 INFO] this account require 2fa
+[2025-05-21 00:28:07.391955372 +08:00 INFO] [future_option_mapping]: 318.642059ms
+[2025-05-21 00:28:07.475663755 +08:00 INFO] [future_option_mapping]: 80.908401ms
+[2025-05-21 00:28:07.673840671 +08:00 INFO] [future_option_mapping]: 197.85105ms
+[2025-05-21 00:28:07.871362755 +08:00 INFO] [future_option_mapping]: 87.690087ms
+[2025-05-21 00:28:33.475542876 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Sell, stock_no: "2023", price_type: Limit, price: Some("15.4"), quantity: 330, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 00:28:33.566966516 +08:00 INFO] [place_order]: 91.993061ms
+[2025-05-21 00:28:33.570650604 +08:00 INFO] [logout] user manually logout
+[2025-05-21 00:28:44.321986625 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:28:44.402767989 +08:00 INFO] this account require 2fa
+[2025-05-21 00:28:44.699086605 +08:00 INFO] [future_option_mapping]: 220.006416ms
+[2025-05-21 00:28:44.777603377 +08:00 INFO] [future_option_mapping]: 72.928327ms
+[2025-05-21 00:28:44.954089533 +08:00 INFO] [future_option_mapping]: 176.216971ms
+[2025-05-21 00:28:45.043175301 +08:00 INFO] [future_option_mapping]: 76.298549ms
+[2025-05-21 00:29:11.344806553 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Sell, stock_no: "2355", price_type: Limit, price: Some("33"), quantity: 300, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 00:29:11.441005959 +08:00 INFO] [place_order]: 96.529741ms
+[2025-05-21 00:29:11.444056616 +08:00 INFO] [logout] user manually logout
+[2025-05-21 00:29:24.405430311 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:29:24.466110676 +08:00 INFO] this account require 2fa
+[2025-05-21 00:29:24.679073564 +08:00 INFO] [future_option_mapping]: 156.927202ms
+[2025-05-21 00:29:24.733746966 +08:00 INFO] [future_option_mapping]: 52.497712ms
+[2025-05-21 00:29:24.867540065 +08:00 INFO] [future_option_mapping]: 133.550615ms
+[2025-05-21 00:29:24.939902488 +08:00 INFO] [future_option_mapping]: 56.518085ms
+[2025-05-21 00:29:39.775951110 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Sell, stock_no: "2359", price_type: Limit, price: Some("143"), quantity: 10, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 00:29:39.836427931 +08:00 INFO] [place_order]: 60.825387ms
+[2025-05-21 00:29:39.838987298 +08:00 INFO] [logout] user manually logout
+[2025-05-21 00:29:47.254512995 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:29:47.339249251 +08:00 INFO] this account require 2fa
+[2025-05-21 00:29:47.654341430 +08:00 INFO] [future_option_mapping]: 232.748477ms
+[2025-05-21 00:29:47.734649743 +08:00 INFO] [future_option_mapping]: 77.836397ms
+[2025-05-21 00:29:47.921029252 +08:00 INFO] [future_option_mapping]: 186.171045ms
+[2025-05-21 00:29:48.018474327 +08:00 INFO] [future_option_mapping]: 82.585766ms
+[2025-05-21 00:30:00.355478679 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Sell, stock_no: "2359", price_type: Limit, price: Some("184"), quantity: 20, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 00:30:00.440245397 +08:00 INFO] [place_order]: 84.857181ms
+[2025-05-21 00:30:00.443974347 +08:00 INFO] [logout] user manually logout
+[2025-05-21 00:30:15.074573857 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 00:30:15.159235865 +08:00 INFO] this account require 2fa
+[2025-05-21 00:30:15.471541055 +08:00 INFO] [future_option_mapping]: 231.336431ms
+[2025-05-21 00:30:15.551281091 +08:00 INFO] [future_option_mapping]: 77.122007ms
+[2025-05-21 00:30:15.737430815 +08:00 INFO] [future_option_mapping]: 185.934899ms
+[2025-05-21 00:30:15.832390706 +08:00 INFO] [future_option_mapping]: 80.499021ms
+[2025-05-21 00:30:15.833833853 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 00:30:15.910359809 +08:00 INFO] [order_result]: 76.506006ms
+[2025-05-21 00:30:15.913218153 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:07:44.970941041 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:07:45.039360365 +08:00 INFO] this account require 2fa
+[2025-05-21 10:07:45.252262062 +08:00 INFO] [future_option_mapping]: 155.167981ms
+[2025-05-21 10:07:45.309563460 +08:00 INFO] [future_option_mapping]: 54.96483ms
+[2025-05-21 10:07:45.451504770 +08:00 INFO] [future_option_mapping]: 141.604075ms
+[2025-05-21 10:07:45.528136952 +08:00 INFO] [future_option_mapping]: 57.588283ms
+[2025-05-21 10:07:55.689038251 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Buy, stock_no: "0050", price_type: Limit, price: Some("180"), quantity: 400, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 10:07:55.771707374 +08:00 INFO] [place_order]: 83.104512ms
+[2025-05-21 10:07:55.774473581 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:07:58.881250932 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:07:58.944705374 +08:00 INFO] this account require 2fa
+[2025-05-21 10:07:59.171838209 +08:00 INFO] [future_option_mapping]: 167.395189ms
+[2025-05-21 10:07:59.230886461 +08:00 INFO] [future_option_mapping]: 55.857358ms
+[2025-05-21 10:07:59.371736769 +08:00 INFO] [future_option_mapping]: 140.629503ms
+[2025-05-21 10:07:59.446728296 +08:00 INFO] [future_option_mapping]: 60.632454ms
+[2025-05-21 10:08:10.583453816 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:08:10.646968688 +08:00 INFO] this account require 2fa
+[2025-05-21 10:08:10.874465699 +08:00 INFO] [future_option_mapping]: 168.229764ms
+[2025-05-21 10:08:10.934407679 +08:00 INFO] [future_option_mapping]: 56.628663ms
+[2025-05-21 10:08:11.079173345 +08:00 INFO] [future_option_mapping]: 144.497391ms
+[2025-05-21 10:08:11.157436708 +08:00 INFO] [future_option_mapping]: 60.308337ms
+[2025-05-21 10:08:38.440393085 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Buy, stock_no: "3017", price_type: Limit, price: Some("16"), quantity: 100, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 10:08:38.504143732 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:08:49.861552071 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:08:49.925940030 +08:00 INFO] this account require 2fa
+[2025-05-21 10:08:50.145055504 +08:00 INFO] [future_option_mapping]: 161.533093ms
+[2025-05-21 10:08:50.202443750 +08:00 INFO] [future_option_mapping]: 54.13909ms
+[2025-05-21 10:08:50.343254002 +08:00 INFO] [future_option_mapping]: 140.585988ms
+[2025-05-21 10:08:50.413558932 +08:00 INFO] [future_option_mapping]: 57.59297ms
+[2025-05-21 10:08:58.765261653 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:08:58.827571269 +08:00 INFO] this account require 2fa
+[2025-05-21 10:08:59.056605743 +08:00 INFO] [future_option_mapping]: 168.144786ms
+[2025-05-21 10:08:59.117799187 +08:00 INFO] [future_option_mapping]: 56.522118ms
+[2025-05-21 10:08:59.265045339 +08:00 INFO] [future_option_mapping]: 146.995577ms
+[2025-05-21 10:08:59.340848240 +08:00 INFO] [future_option_mapping]: 60.099292ms
+[2025-05-21 10:09:28.008606441 +08:00 INFO] [place_order] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" },order=Order { oxtp: NewOrder, market_type: IntradayOdd, sess: Some("0"), date: None, buy_sell: Buy, stock_no: "3017", price_type: Limit, price: Some("600"), quantity: 100, time_in_force: ROD, order_type: Stock, user_def: Some("CLI") }, is_async=false
+[2025-05-21 10:09:28.088826850 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:10:47.833888321 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:10:47.926236942 +08:00 INFO] this account require 2fa
+[2025-05-21 10:10:48.271451467 +08:00 INFO] [future_option_mapping]: 256.020098ms
+[2025-05-21 10:10:48.360322638 +08:00 INFO] [future_option_mapping]: 85.285558ms
+[2025-05-21 10:10:48.567873023 +08:00 INFO] [future_option_mapping]: 207.153736ms
+[2025-05-21 10:10:48.676053685 +08:00 INFO] [future_option_mapping]: 88.497643ms
+[2025-05-21 10:10:48.677775269 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:10:48.762939725 +08:00 INFO] [order_result]: 85.141736ms
+[2025-05-21 10:10:54.019782235 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:10:54.080434184 +08:00 INFO] this account require 2fa
+[2025-05-21 10:10:54.300380 +08:00 INFO] [future_option_mapping]: 162.275928ms
+[2025-05-21 10:10:54.358024458 +08:00 INFO] [future_option_mapping]: 54.346392ms
+[2025-05-21 10:10:54.500627086 +08:00 INFO] [future_option_mapping]: 142.332183ms
+[2025-05-21 10:10:54.576077275 +08:00 INFO] [future_option_mapping]: 57.039856ms
+[2025-05-21 10:10:54.577766879 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:10:54.631847064 +08:00 INFO] [order_result]: 54.059725ms
+[2025-05-21 10:11:09.721099097 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:11:09.781718365 +08:00 INFO] this account require 2fa
+[2025-05-21 10:11:10.000175358 +08:00 INFO] [future_option_mapping]: 161.426959ms
+[2025-05-21 10:11:10.058094361 +08:00 INFO] [future_option_mapping]: 54.003533ms
+[2025-05-21 10:11:10.213055429 +08:00 INFO] [future_option_mapping]: 154.58918ms
+[2025-05-21 10:11:10.289356674 +08:00 INFO] [future_option_mapping]: 57.324981ms
+[2025-05-21 10:11:10.291736252 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:11:10.345582073 +08:00 INFO] [order_result]: 53.818319ms
+[2025-05-21 10:21:48.617569672 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:21:48.705532677 +08:00 INFO] this account require 2fa
+[2025-05-21 10:21:49.035337158 +08:00 INFO] [future_option_mapping]: 243.335625ms
+[2025-05-21 10:21:49.121603189 +08:00 INFO] [future_option_mapping]: 81.372513ms
+[2025-05-21 10:21:49.330901812 +08:00 INFO] [future_option_mapping]: 208.999816ms
+[2025-05-21 10:21:49.478411191 +08:00 INFO] [future_option_mapping]: 84.955235ms
+[2025-05-21 10:21:49.481190067 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:21:49.562355167 +08:00 INFO] [order_result]: 81.132658ms
+[2025-05-21 10:23:00.272384051 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:23:00.335645161 +08:00 INFO] this account require 2fa
+[2025-05-21 10:23:00.562734727 +08:00 INFO] [future_option_mapping]: 167.999971ms
+[2025-05-21 10:23:00.622324853 +08:00 INFO] [future_option_mapping]: 56.363771ms
+[2025-05-21 10:23:00.772394624 +08:00 INFO] [future_option_mapping]: 149.805865ms
+[2025-05-21 10:23:00.852448360 +08:00 INFO] [future_option_mapping]: 59.225078ms
+[2025-05-21 10:23:00.854375109 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:23:00.910001865 +08:00 INFO] [order_result]: 55.606136ms
+[2025-05-21 10:23:00.914503745 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:23:31.345001206 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:23:31.430214516 +08:00 INFO] this account require 2fa
+[2025-05-21 10:23:31.745845108 +08:00 INFO] [future_option_mapping]: 233.132007ms
+[2025-05-21 10:23:31.826990996 +08:00 INFO] [future_option_mapping]: 77.920463ms
+[2025-05-21 10:23:32.092870749 +08:00 INFO] [future_option_mapping]: 265.600048ms
+[2025-05-21 10:23:32.194265554 +08:00 INFO] [future_option_mapping]: 81.827433ms
+[2025-05-21 10:23:32.195850586 +08:00 INFO] [unrealized gains and loses] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:23:32.408544023 +08:00 INFO] [inventory_stock_detail_result]: 212.670907ms
+[2025-05-21 10:23:32.413601674 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:23:55.120881802 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:23:55.202093381 +08:00 INFO] this account require 2fa
+[2025-05-21 10:23:55.500115669 +08:00 INFO] [future_option_mapping]: 220.33038ms
+[2025-05-21 10:23:55.577251007 +08:00 INFO] [future_option_mapping]: 73.178036ms
+[2025-05-21 10:23:55.760771477 +08:00 INFO] [future_option_mapping]: 183.258826ms
+[2025-05-21 10:23:55.857856485 +08:00 INFO] [future_option_mapping]: 76.807891ms
+[2025-05-21 10:23:55.860608190 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:24:23.123786535 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:24:23.186373521 +08:00 INFO] this account require 2fa
+[2025-05-21 10:24:23.415196501 +08:00 INFO] [future_option_mapping]: 168.551691ms
+[2025-05-21 10:24:23.475138263 +08:00 INFO] [future_option_mapping]: 55.992833ms
+[2025-05-21 10:24:23.623300724 +08:00 INFO] [future_option_mapping]: 147.919787ms
+[2025-05-21 10:24:23.704213427 +08:00 INFO] [future_option_mapping]: 60.86576ms
+[2025-05-21 10:24:23.707245078 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:24:23.763172910 +08:00 INFO] [order_result]: 55.898001ms
+[2025-05-21 10:30:52.047453721 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:30:52.109658696 +08:00 INFO] this account require 2fa
+[2025-05-21 10:30:52.340435942 +08:00 INFO] [future_option_mapping]: 171.535408ms
+[2025-05-21 10:30:52.399226501 +08:00 INFO] [future_option_mapping]: 55.461033ms
+[2025-05-21 10:30:52.542418244 +08:00 INFO] [future_option_mapping]: 142.964067ms
+[2025-05-21 10:30:52.615605256 +08:00 INFO] [future_option_mapping]: 58.960462ms
+[2025-05-21 10:30:52.618171334 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:30:52.673891873 +08:00 INFO] [order_result]: 55.698799ms
+[2025-05-21 10:34:02.087492088 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:34:02.155336798 +08:00 INFO] this account require 2fa
+[2025-05-21 10:34:02.407590253 +08:00 INFO] [future_option_mapping]: 184.052236ms
+[2025-05-21 10:34:02.472862107 +08:00 INFO] [future_option_mapping]: 60.492079ms
+[2025-05-21 10:34:02.626058201 +08:00 INFO] [future_option_mapping]: 152.938288ms
+[2025-05-21 10:34:02.705748850 +08:00 INFO] [future_option_mapping]: 64.002027ms
+[2025-05-21 10:34:02.708508630 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:34:02.769457101 +08:00 INFO] [order_result]: 60.92059ms
+[2025-05-21 10:34:02.771932524 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:44:49.142073537 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:44:49.206145734 +08:00 INFO] this account require 2fa
+[2025-05-21 10:44:49.439309204 +08:00 INFO] [future_option_mapping]: 172.652729ms
+[2025-05-21 10:44:49.499599242 +08:00 INFO] [future_option_mapping]: 55.851504ms
+[2025-05-21 10:44:49.648415014 +08:00 INFO] [future_option_mapping]: 148.577648ms
+[2025-05-21 10:44:49.727168546 +08:00 INFO] [future_option_mapping]: 60.367179ms
+[2025-05-21 10:44:49.730379913 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:44:49.786069094 +08:00 INFO] [order_result]: 55.66536ms
+[2025-05-21 10:44:49.789052607 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:56:05.216383800 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:56:05.281312165 +08:00 INFO] this account require 2fa
+[2025-05-21 10:56:05.708920601 +08:00 INFO] [future_option_mapping]: 368.330516ms
+[2025-05-21 10:56:05.768214940 +08:00 INFO] [future_option_mapping]: 55.873439ms
+[2025-05-21 10:56:06.031399524 +08:00 INFO] [future_option_mapping]: 262.877127ms
+[2025-05-21 10:56:06.172165169 +08:00 INFO] [future_option_mapping]: 60.834551ms
+[2025-05-21 10:56:06.175787893 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:56:06.231392887 +08:00 INFO] [order_result]: 55.568823ms
+[2025-05-21 10:56:06.234330837 +08:00 INFO] [logout] user manually logout
+[2025-05-21 10:58:52.129250885 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 10:58:52.208152267 +08:00 INFO] this account require 2fa
+[2025-05-21 10:58:52.491403115 +08:00 INFO] [future_option_mapping]: 210.024944ms
+[2025-05-21 10:58:52.564572598 +08:00 INFO] [future_option_mapping]: 69.662652ms
+[2025-05-21 10:58:52.749830923 +08:00 INFO] [future_option_mapping]: 184.99532ms
+[2025-05-21 10:58:52.848269265 +08:00 INFO] [future_option_mapping]: 74.288836ms
+[2025-05-21 10:58:52.851498461 +08:00 INFO] [get_order_results] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 10:58:52.921131731 +08:00 INFO] [order_result]: 69.60106ms
+[2025-05-21 10:58:52.924563741 +08:00 INFO] [logout] user manually logout
+[2025-05-21 17:24:29.185872809 +08:00 INFO] [login] personal_id="M122530473"
+[2025-05-21 17:24:29.274742916 +08:00 INFO] this account require 2fa
+[2025-05-21 17:24:29.537543848 +08:00 INFO] [future_option_mapping]: 198.407324ms
+[2025-05-21 17:24:29.616618337 +08:00 INFO] [future_option_mapping]: 56.334367ms
+[2025-05-21 17:24:29.859034475 +08:00 INFO] [future_option_mapping]: 241.836116ms
+[2025-05-21 17:24:30.028308770 +08:00 INFO] [future_option_mapping]: 59.040105ms
+[2025-05-21 17:24:30.030881974 +08:00 INFO] [unrealized gains and loses] account=Account { branch_no: "20207", account: "347011", account_type: "stock", name: "蕭新弘" }
+[2025-05-21 17:24:30.289795563 +08:00 INFO] [inventory_stock_detail_result]: 258.878918ms
+[2025-05-21 17:24:30.296204659 +08:00 INFO] [logout] user manually logout

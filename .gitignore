@@ -1,0 +1,30 @@
+# Python 相關
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.env
+venv/
+env/
+
+# IDE 相關
+.vscode/
+.idea/
+*.swp
+
+# 系統檔案
+.DS_Store
+Thumbs.db
+
+# 日誌檔
+*.log
+
+# 只允許 Python 檔案和專案相關檔案
+# 如果你想更嚴格，可以用以下規則：
+# *
+# !*.py
+# !.gitignore
+# !README.md
+# !requirements.txt
