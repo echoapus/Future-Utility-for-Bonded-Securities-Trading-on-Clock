@@ -8,7 +8,7 @@ __pycache__/
 .env
 venv/
 env/
-
+.txt
 # IDE 相關
 .vscode/
 .idea/
@@ -29,3 +29,8 @@ config.json
 !README.md
 !requirements.txt
 config.json
+
+# 資料夾
+CatCage/
+RequestToday/
+
