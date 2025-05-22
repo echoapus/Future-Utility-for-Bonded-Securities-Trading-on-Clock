@@ -17,14 +17,15 @@ env/
 # 系統檔案
 .DS_Store
 Thumbs.db
-
+config.json
 # 日誌檔
 *.log
 
 # 只允許 Python 檔案和專案相關檔案
 # 如果你想更嚴格，可以用以下規則：
 # *
-# !*.py
-# !.gitignore
-# !README.md
-# !requirements.txt
+!*.py
+!.gitignore
+!README.md
+!requirements.txt
+config.json
