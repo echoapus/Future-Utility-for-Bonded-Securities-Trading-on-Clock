@@ -8,7 +8,7 @@ __pycache__/
 .env
 venv/
 env/
-.txt
+
 # IDE 相關
 .vscode/
 .idea/
@@ -17,20 +17,21 @@ env/
 # 系統檔案
 .DS_Store
 Thumbs.db
+
+# 設定檔案
 config.json
+
 # 日誌檔
 *.log
 
-# 只允許 Python 檔案和專案相關檔案
-# 如果你想更嚴格，可以用以下規則：
-# *
-!*.py
-!.gitignore
-!README.md
-!requirements.txt
-config.json
+# 文字檔案（如果不需要的話）
+*.txt
 
 # 資料夾
 CatCage/
 RequestToday/
+log/
 
+# 壓縮檔
+*.tar.bz2
+*.zip
