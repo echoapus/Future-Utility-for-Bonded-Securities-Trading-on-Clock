@@ -9,6 +9,7 @@ no need " or '
 FUBON_ID=
 FUBON_PASS=
 FUBON_CERT_PASS=
+TELEGRAM_BOT_TOKEN=
 ```
 
 config.json
