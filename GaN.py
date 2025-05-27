@@ -21,6 +21,26 @@ def login_thread():
         print(f"登入失敗: {e}")
         login_success = False
 
+def logout_system():
+    """登出富邦系統"""
+    global sdk, reststock, login_success
+    
+    try:
+        if sdk:
+            sdk.logout()
+            print("已登出富邦系統")
+        
+        # 重置全域變數
+        sdk = None
+        reststock = None
+        login_success = False
+        
+        return True
+        
+    except Exception as e:
+        print(f"登出失敗: {e}")
+        return False
+
 def analyze_big_orders(trades_data):
     """分析大單流向 (50張以上)"""
     if not trades_data or not trades_data.get('data'):
@@ -515,7 +535,7 @@ def init_system():
     return login_success
 
 def analyze_stock(symbol):
-    """分析指定股票 (外部調用接口)"""
+    """分析指定股票 (外部調用接口 - 不登出版本)"""
     global reststock, login_success
     
     if not login_success:
@@ -529,12 +549,44 @@ def analyze_stock(symbol):
     symbol = symbol.strip().upper()
     return analyze_stock_complete(reststock, symbol)
 
+def analyze_stock_with_logout(symbol):
+    """分析股票後自動登出 (Telegram 機器人專用)"""
+    global reststock, login_success
+    
+    if not login_success:
+        print("系統尚未登入成功")
+        return False
+    
+    if not symbol:
+        print("請提供股票代碼")
+        return False
+    
+    symbol = symbol.strip().upper()
+    
+    try:
+        # 執行分析
+        result = analyze_stock_complete(reststock, symbol)
+        
+        # 分析完成後立即登出
+        logout_system()
+        
+        return result
+        
+    except Exception as e:
+        print(f"分析過程中發生錯誤: {e}")
+        # 即使發生錯誤也要嘗試登出
+        try:
+            logout_system()
+        except:
+            pass
+        return False
+
 def main():
     """主程序 - 支援命令列參數"""
     if len(sys.argv) < 2:
         print("使用方法:")
-        print("  python AESA.py <股票代碼>")
-        print("  例如: python AESA.py 2330")
+        print("  python GaN.py <股票代碼>")
+        print("  例如: python GaN.py 2330")
         return
     
     # 從命令列取得股票代碼
@@ -545,7 +597,7 @@ def main():
         print("系統初始化失敗")
         return
     
-    # 分析股票
+    # 分析股票 (命令列使用不自動登出)
     success = analyze_stock(stock_code)
     
     if success:
@@ -555,13 +607,22 @@ def main():
 
 # 提供外部調用的接口
 def run_analysis(stock_code):
-    """供外部模組調用的分析函數"""
+    """供外部模組調用的分析函數 (不自動登出)"""
     # 初始化系統 (如果尚未初始化)
     if not login_success:
         if not init_system():
             return False
     
     return analyze_stock(stock_code)
+
+def run_analysis_with_logout(stock_code):
+    """供 Telegram 機器人調用的分析函數 (包含自動登出)"""
+    # 初始化系統 (如果尚未初始化)
+    if not login_success:
+        if not init_system():
+            return False
+    
+    return analyze_stock_with_logout(stock_code)
 
 if __name__ == "__main__":
     main()
