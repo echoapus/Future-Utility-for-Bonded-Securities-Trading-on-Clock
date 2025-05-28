@@ -5,11 +5,40 @@ import math
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import queue
+import os
 
 # 全域變數
 sdk = None
 reststock = None
 login_success = False
+
+def load_exclude_list(file_path="etf.list"):
+    """讀取排除清單"""
+    exclude_symbols = set()
+    
+    if not os.path.exists(file_path):
+        print(f"警告: 找不到排除清單檔案 {file_path}")
+        return exclude_symbols
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                # 跳過空行和註解行
+                if line and not line.startswith('#'):
+                    exclude_symbols.add(line)
+        
+        print(f"已載入排除清單: {len(exclude_symbols)} 個代碼 (來源: {file_path})")
+        if exclude_symbols:
+            # 顯示前10個排除代碼做確認
+            sample_codes = list(exclude_symbols)[:10]
+            print(f"排除代碼範例: {', '.join(sample_codes)}" + 
+                  (f" ...等{len(exclude_symbols)}個" if len(exclude_symbols) > 10 else ""))
+        
+    except Exception as e:
+        print(f"讀取排除清單失敗: {e}")
+    
+    return exclude_symbols
 
 def login_thread():
     """登入線程"""
@@ -272,6 +301,9 @@ def analyze_single_stock(stock_info, reststock):
 
 def screen_stocks(reststock):
     """股票篩選主程式"""
+    # 載入排除清單
+    exclude_symbols = load_exclude_list("etf.list")
+    
     # 第一階段：建立精確的候選池
     try:
         print("第一階段：建立候選池")
@@ -291,8 +323,12 @@ def screen_stocks(reststock):
         print("正在進行第一階段篩選...")
         filtered_stocks = []
         
-        # 排除清單
+        # 排除清單統計
         exclude_keywords = ['ETF', 'ETN', '債', '期']
+        excluded_by_keyword = 0
+        excluded_by_list = 0
+        excluded_no_volume = 0
+        excluded_low_volume = 0
         
         for stock in all_stocks:
             symbol = stock.get('symbol', '')
@@ -304,20 +340,31 @@ def screen_stocks(reststock):
             
             # 排除條件檢查
             should_exclude = False
+            exclude_reason = ""
             
-            # 1. 檢查名稱是否包含排除關鍵字
-            for keyword in exclude_keywords:
-                if keyword in name:
-                    should_exclude = True
-                    break
-            
-            # 2. 檢查是否停牌（無成交量）
-            if volume == 0:
+            # 1. 檢查是否在排除清單中
+            if symbol in exclude_symbols:
                 should_exclude = True
+                exclude_reason = "排除清單"
+                excluded_by_list += 1
             
-            # 3. 檢查成交量是否 >= 2,000張
-            if volume < 2000:
+            # 2. 檢查名稱是否包含排除關鍵字
+            elif any(keyword in name for keyword in exclude_keywords):
                 should_exclude = True
+                exclude_reason = "關鍵字"
+                excluded_by_keyword += 1
+            
+            # 3. 檢查是否停牌（無成交量）
+            elif volume == 0:
+                should_exclude = True
+                exclude_reason = "停牌"
+                excluded_no_volume += 1
+            
+            # 4. 檢查成交量是否 >= 2,000張
+            elif volume < 2000:
+                should_exclude = True
+                exclude_reason = "成交量不足"
+                excluded_low_volume += 1
             
             # 如果通過所有檢查，加入候選池
             if not should_exclude:
@@ -334,22 +381,20 @@ def screen_stocks(reststock):
         
         print(f"第一階段篩選完成:")
         print(f"   原始股票: {len(all_stocks)} 檔")
-        print(f"   篩選條件: 排除ETF/ETN/債券/期貨、排除停牌股、成交量>=2,000張")
+        print(f"   篩選條件: 排除清單 + 排除ETF/ETN/債券/期貨 + 排除停牌股 + 成交量>=2,000張")
         print(f"   候選池: {len(filtered_stocks)} 檔符合條件")
         
         if len(filtered_stocks) == 0:
             print("沒有股票符合第一階段條件！")
             return []
         
-        # 顯示篩選統計
-        excluded_etf = sum(1 for s in all_stocks if any(kw in s.get('name', '') for kw in exclude_keywords))
-        excluded_no_volume = sum(1 for s in all_stocks if s.get('tradeVolume', 0) == 0)
-        excluded_low_volume = sum(1 for s in all_stocks if 0 < s.get('tradeVolume', 0) < 2000)
-        
+        # 顯示詳細篩選統計
         print(f"排除統計:")
-        print(f"   ETF/ETN/債券/期貨: {excluded_etf} 檔")
+        print(f"   排除清單: {excluded_by_list} 檔")
+        print(f"   ETF/ETN/債券/期貨關鍵字: {excluded_by_keyword} 檔")
         print(f"   停牌無交易: {excluded_no_volume} 檔") 
         print(f"   成交量<2,000張: {excluded_low_volume} 檔")
+        print(f"   總排除: {excluded_by_list + excluded_by_keyword + excluded_no_volume + excluded_low_volume} 檔")
         
         # 顯示候選池前10大
         print(f"\n候選池成交量前10大:")
@@ -398,7 +443,6 @@ def screen_stocks(reststock):
     
     # 多線程設定
     max_workers = min(10, len(stock_list))  # 最多10個線程，避免API限制
-    #print(f"使用 {max_workers} 個線程同時分析，預計可提速 {max_workers//2}-{max_workers} 倍")
     
     qualified_stocks = []
     processed = 0
