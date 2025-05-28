@@ -4,6 +4,7 @@ import asyncio
 import logging
 import tempfile
 import datetime
+import re
 from io import StringIO
 from contextlib import redirect_stdout, redirect_stderr
 from telegram import Update
@@ -49,6 +50,32 @@ class StockAnalysisBot:
             filters.TEXT & ~filters.COMMAND, 
             self.analyze_stock_message
         ))
+    
+    def is_valid_stock_code(self, code):
+        """
+        簡單的股票代碼驗證 - 只允許數字和英文字母
+        
+        Args:
+            code (str): 股票代碼
+            
+        Returns:
+            bool: 是否有效
+        """
+        if not code or not isinstance(code, str):
+            return False
+        
+        # 去除空白並轉大寫
+        code = code.strip().upper()
+        
+        # 長度檢查：3-6 字符
+        if not (3 <= len(code) <= 6):
+            return False
+        
+        # 只允許數字和英文字母的組合
+        if not re.match(r'^[0-9A-Z]+$', code):
+            return False
+        
+        return True
     
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """開始指令"""
@@ -102,8 +129,9 @@ class StockAnalysisBot:
 /init - 重新初始化（如遇問題可使用）
 
 💬 支援格式：
-• 純數字：2330
-• 帶字母：0050
+• 長度：3-6 個字符
+• 只能包含數字和英文字母
+• 範例：2330、0050、2454、006208
         """
         await update.message.reply_text(help_text)
     
@@ -152,11 +180,13 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
         """處理股票代碼訊息"""
         user_input = update.message.text.strip().upper()
         
-        # 檢查是否為股票代碼格式
+        # 簡單檢查是否為股票代碼格式
         if not self.is_valid_stock_code(user_input):
             await update.message.reply_text(
                 "❓ 請輸入有效的股票代碼\n"
-                "範例：2330、0050、2454\n"
+                "• 長度：3-6 個字符\n"
+                "• 只能包含數字和英文字母\n"
+                "• 範例：2330、0050、2454\n"
                 "或使用 /help 查看說明"
             )
             return
@@ -218,23 +248,6 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
             await analysis_msg.edit_text(f"❌ 分析過程中發生錯誤：{str(e)}")
             # 發生錯誤時重置狀態
             self.gan_initialized = False
-    
-    def is_valid_stock_code(self, code):
-        """檢查是否為有效的股票代碼"""
-        # 基本格式檢查：3-4位數字，可能包含字母
-        if len(code) < 3 or len(code) > 6:
-            return False
-        
-        # 台股代碼格式：純數字或數字+字母
-        if code.isdigit():
-            return True
-        
-        # ETF 格式 (如 0050, 006208)
-        if code[0] == '0' and code[1:].isdigit():
-            return True
-        
-        # 其他格式檢查
-        return code.replace('-', '').replace('.', '').isalnum()
     
     async def send_analysis_file(self, update: Update, analysis_content: str, stock_code: str):
         """將分析結果製作成 TXT 檔案並發送"""
