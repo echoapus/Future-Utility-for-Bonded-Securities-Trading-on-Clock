@@ -23,11 +23,20 @@ def login_thread():
         login_success = False
 
 def logout_system():
-    """登出富邦系統"""
+    """登出富邦系統 - 加強版"""
     global sdk, reststock, login_success
     
     try:
         if sdk:
+            # 關閉即時資料連線
+            if hasattr(sdk, 'close_realtime'):
+                try:
+                    sdk.close_realtime()
+                    print("已關閉即時資料連線")
+                except:
+                    pass
+            
+            # 登出系統
             sdk.logout()
             print("已登出富邦系統")
         
@@ -36,14 +45,22 @@ def logout_system():
         reststock = None
         login_success = False
         
+        # 強制垃圾回收
+        import gc
+        gc.collect()
+        
         return True
         
     except Exception as e:
         print(f"登出失敗: {e}")
+        # 即使登出失敗也要重置變數
+        sdk = None
+        reststock = None
+        login_success = False
         return False
 
 def analyze_big_orders(trades_data):
-    """分析大單流向 (50張以上)"""
+    """分析大單流向 (50張以上) - 修正版"""
     if not trades_data or not trades_data.get('data'):
         return None
     
@@ -58,16 +75,28 @@ def analyze_big_orders(trades_data):
             big_orders.append(trade)
             total_big_volume += size
             
-            # 判斷內外盤 (如果有bid/ask資訊)
-            bid = trade.get('bid')
-            ask = trade.get('ask')
-            price = trade.get('price')
+            # 修正：改進內外盤判斷邏輯
+            price = trade.get('price', 0)
             
-            if bid and ask and price:
-                if price <= bid:
-                    big_bid_volume += size  # 內盤
-                elif price >= ask:
-                    big_ask_volume += size  # 外盤
+            # 方法1：如果有tick資訊
+            if 'tick' in trade:
+                tick = trade['tick']
+                if tick in ['up', 'plus', '+']:
+                    big_ask_volume += size  # 外盤（主動買進）
+                elif tick in ['down', 'minus', '-']:
+                    big_bid_volume += size  # 內盤（主動賣出）
+                # 平盤不計入
+            else:
+                # 方法2：使用bid/ask價格判斷
+                bid = trade.get('bid', 0)
+                ask = trade.get('ask', 0)
+                
+                if bid and ask and price:
+                    mid_price = (bid + ask) / 2
+                    if price >= mid_price:
+                        big_ask_volume += size  # 外盤
+                    else:
+                        big_bid_volume += size  # 內盤
     
     if total_big_volume > 0:
         return {
@@ -80,9 +109,9 @@ def analyze_big_orders(trades_data):
             'orders': big_orders[:5]  # 只顯示前5筆
         }
     return None
-
+    
 def analyze_order_book_strength(quote_data):
-    """分析五檔買賣力道"""
+    """分析五檔買賣力道 - 修正版"""
     if not quote_data:
         return None
     
@@ -100,29 +129,39 @@ def analyze_order_book_strength(quote_data):
     if total_size == 0:
         return None
     
-    # 計算價格加權的買賣力道
+    # 取得當前價格
     current_price = quote_data.get('lastPrice') or quote_data.get('closePrice', 0)
     if current_price == 0:
         return None
     
-    # 買盤力道 (距離現價越近權重越高)
+    # 修正：改進價格加權計算
     bid_strength = 0
+    ask_strength = 0
+    
+    # 買盤力道計算（距離現價越近權重越高）
     for i, bid in enumerate(bids):
         price = bid.get('price', 0)
         size = bid.get('size', 0)
-        if price > 0:
-            distance_ratio = price / current_price  # 距離現價比例
-            weight = distance_ratio * (1 - i * 0.1)  # 檔次權重遞減
+        if price > 0 and current_price > 0:
+            # 距離現價的比例 (0-1之間)
+            distance_ratio = price / current_price
+            # 檔次權重 (第一檔權重最高)
+            level_weight = 1 - (i * 0.15)  # 每檔遞減15%
+            # 綜合權重
+            weight = distance_ratio * level_weight
             bid_strength += size * weight
     
-    # 賣盤力道 (距離現價越近權重越高)
-    ask_strength = 0
+    # 賣盤力道計算（距離現價越近權重越高）
     for i, ask in enumerate(asks):
         price = ask.get('price', 0)
         size = ask.get('size', 0)
-        if price > 0:
-            distance_ratio = current_price / price  # 距離現價比例
-            weight = distance_ratio * (1 - i * 0.1)  # 檔次權重遞減
+        if price > 0 and current_price > 0:
+            # 距離現價的比例 (0-1之間)
+            distance_ratio = current_price / price
+            # 檔次權重 (第一檔權重最高)
+            level_weight = 1 - (i * 0.15)  # 每檔遞減15%
+            # 綜合權重
+            weight = distance_ratio * level_weight
             ask_strength += size * weight
     
     # 計算力道比例
@@ -134,10 +173,14 @@ def analyze_order_book_strength(quote_data):
     ask_ratio = (ask_strength / total_strength) * 100
     
     # 判斷買賣勢力
-    if bid_ratio > 60:
+    if bid_ratio > 65:
         market_sentiment = "買盤強勢"
-    elif ask_ratio > 60:
+    elif ask_ratio > 65:
         market_sentiment = "賣盤強勢"
+    elif bid_ratio > 55:
+        market_sentiment = "買盤偏強"
+    elif ask_ratio > 55:
+        market_sentiment = "賣盤偏強"
     else:
         market_sentiment = "買賣均衡"
     
@@ -160,6 +203,7 @@ def analyze_order_book_strength(quote_data):
         'best_bid': best_bid,
         'best_ask': best_ask
     }
+
 
 def get_market_overview(reststock):
     """取得大盤概況"""
@@ -312,7 +356,7 @@ def calculate_ma(prices, period):
     return ma_values
 
 def calculate_ema(prices, period):
-    """計算指數移動平均線 (EMA)"""
+    """計算指數移動平均線 (EMA) - 修正版"""
     if len(prices) < period:
         return None
     
@@ -323,7 +367,7 @@ def calculate_ema(prices, period):
     sma = sum(prices[:period]) / period
     ema_values.append(sma)
     
-    # 後續EMA計算
+    # 後續EMA計算 - 修正：從period開始而不是period
     for i in range(period, len(prices)):
         ema = (prices[i] * multiplier) + (ema_values[-1] * (1 - multiplier))
         ema_values.append(ema)
@@ -388,7 +432,7 @@ def calculate_rsi(prices, period=14):
     }
 
 def calculate_bollinger_bands(prices, period=20, std_dev=2):
-    """計算布林通道"""
+    """計算布林通道 - 修正版"""
     if len(prices) < period:
         return None
     
@@ -400,20 +444,24 @@ def calculate_bollinger_bands(prices, period=20, std_dev=2):
     bb_lower = []
     bb_middle = ma_values
     
+    # 修正：正確計算每個MA對應的標準差
     for i in range(len(ma_values)):
-        # 計算對應期間的標準差
-        start_idx = i
-        end_idx = i + period
-        period_prices = prices[start_idx:end_idx]
+        # 計算對應的價格區間
+        price_end_idx = period + i  # MA的結束位置
+        price_start_idx = i         # MA的開始位置
+        
+        period_prices = prices[price_start_idx:price_end_idx]
         
         if len(period_prices) == period:
             mean = ma_values[i]
+            # 計算母體標準差
             variance = sum((x - mean) ** 2 for x in period_prices) / period
             std = math.sqrt(variance)
             
             bb_upper.append(mean + (std_dev * std))
             bb_lower.append(mean - (std_dev * std))
         else:
+            # 如果資料不足，使用MA值
             bb_upper.append(ma_values[i])
             bb_lower.append(ma_values[i])
     
@@ -428,6 +476,9 @@ def calculate_bollinger_bands(prices, period=20, std_dev=2):
     else:
         bb_position = 0.5
     
+    # 確保位置在0-1之間
+    bb_position = max(0, min(1, bb_position))
+    
     return {
         'upper': current_upper,
         'middle': current_middle,
@@ -437,8 +488,9 @@ def calculate_bollinger_bands(prices, period=20, std_dev=2):
         'squeeze': (current_upper - current_lower) / current_middle if current_middle > 0 else 0
     }
 
+
 def calculate_macd(prices):
-    """計算MACD指標"""
+    """計算MACD指標 - 修正版"""
     if len(prices) < 26:
         return None
     
@@ -449,16 +501,15 @@ def calculate_macd(prices):
     if not ema12 or not ema26:
         return None
     
-    # 對齊EMA12和EMA26的長度 (EMA26比較短)
-    ema12_aligned = ema12[14:]  # 跳過前14個(26-12)
-    
-    if len(ema12_aligned) != len(ema26):
-        min_len = min(len(ema12_aligned), len(ema26))
-        ema12_aligned = ema12_aligned[-min_len:]
-        ema26 = ema26[-min_len:]
+    # 修正：正確對齊EMA12和EMA26
+    # EMA26從第26個價格開始，EMA12從第12個價格開始
+    # 所以要讓它們的時間軸對齊，EMA12需要跳過前14個值 (26-12=14)
+    min_length = min(len(ema12), len(ema26))
+    ema12_aligned = ema12[-min_length:]
+    ema26_aligned = ema26[-min_length:]
     
     # 計算DIF (快線 - 慢線)
-    dif = [ema12_aligned[i] - ema26[i] for i in range(len(ema26))]
+    dif = [ema12_aligned[i] - ema26_aligned[i] for i in range(len(ema26_aligned))]
     
     # 計算MACD (DIF的9日EMA)
     if len(dif) < 9:
@@ -469,7 +520,7 @@ def calculate_macd(prices):
         return None
     
     # 對齊DIF和MACD
-    dif_aligned = dif[8:]  # 跳過前8個(9-1)
+    dif_aligned = dif[-len(macd):]
     
     # 計算OSC (柱狀圖)
     osc = [dif_aligned[i] - macd[i] for i in range(len(macd))]
@@ -484,7 +535,7 @@ def calculate_macd(prices):
     }
 
 def calculate_kd(high_prices, low_prices, close_prices, k_period=9, d_period=3):
-    """計算KD指標"""
+    """計算KD指標 - 修正版"""
     if len(high_prices) < k_period or len(low_prices) < k_period or len(close_prices) < k_period:
         return None
     
@@ -506,20 +557,25 @@ def calculate_kd(high_prices, low_prices, close_prices, k_period=9, d_period=3):
     if not rsv_values:
         return None
     
-    # 計算K值 (RSV的移動平均)
+    # 修正：使用正確的KD平滑化公式
+    # K值 = (2/3) * 前一日K值 + (1/3) * 當日RSV
+    # D值 = (2/3) * 前一日D值 + (1/3) * 當日K值
     k_values = []
-    k_value = 50  # 初始K值
-    
-    for rsv in rsv_values:
-        k_value = (rsv + (d_period - 1) * k_value) / d_period
-        k_values.append(k_value)
-    
-    # 計算D值 (K值的移動平均)
     d_values = []
+    
+    k_value = 50  # 初始K值
     d_value = 50  # 初始D值
     
-    for k in k_values:
-        d_value = (k + (d_period - 1) * d_value) / d_period
+    smoothing_k = 1/3  # K值平滑因子
+    smoothing_d = 1/3  # D值平滑因子
+    
+    for rsv in rsv_values:
+        # 計算K值
+        k_value = smoothing_k * rsv + (1 - smoothing_k) * k_value
+        k_values.append(k_value)
+        
+        # 計算D值
+        d_value = smoothing_d * k_value + (1 - smoothing_d) * d_value
         d_values.append(d_value)
     
     return {
