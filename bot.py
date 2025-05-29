@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 # 導入您的 GaN 分析模組
 try:
-    from g2 import init_system, run_analysis_with_logout, login_success, sdk
+    from GaN import init_system, run_analysis_with_logout, login_success, sdk
 except ImportError:
     print("請確保 GaN.py 在同一目錄下")
     sys.exit(1)
