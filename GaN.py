@@ -9,6 +9,30 @@ sdk = None
 reststock = None
 login_success = False
 
+def calculate_vwap(candles_data):
+    """計算當日VWAP (成交量加權平均價)"""
+    if not candles_data or not candles_data.get('data'):
+        return None
+    
+    total_pv = 0  # 價格×成交量總和
+    total_volume = 0  # 成交量總和
+    
+    for candle in candles_data['data']:
+        # 使用典型價格 (H+L+C)/3
+        high = candle.get('high', 0)
+        low = candle.get('low', 0)
+        close = candle.get('close', 0)
+        volume = candle.get('volume', 0)
+        
+        if volume > 0:
+            typical_price = (high + low + close) / 3
+            total_pv += typical_price * volume
+            total_volume += volume
+    
+    if total_volume > 0:
+        return total_pv / total_volume
+    return None
+
 def login_thread():
     """登入線程"""
     global sdk, reststock, login_success
@@ -75,28 +99,31 @@ def analyze_big_orders(trades_data):
             big_orders.append(trade)
             total_big_volume += size
             
-            # 修正：改進內外盤判斷邏輯
+            # 改進的內外盤判斷
             price = trade.get('price', 0)
             
-            # 方法1：如果有tick資訊
+            # 方法1：使用交易標記
             if 'tick' in trade:
                 tick = trade['tick']
-                if tick in ['up', 'plus', '+']:
+                if tick in ['up', 'plus', '+', 1]:
                     big_ask_volume += size  # 外盤（主動買進）
-                elif tick in ['down', 'minus', '-']:
+                elif tick in ['down', 'minus', '-', -1]:
                     big_bid_volume += size  # 內盤（主動賣出）
-                # 平盤不計入
-            else:
-                # 方法2：使用bid/ask價格判斷
+                # 平盤不歸類
+            
+            # 方法2：如果沒有tick資訊，使用五檔價格判斷
+            elif 'bid' in trade and 'ask' in trade:
                 bid = trade.get('bid', 0)
                 ask = trade.get('ask', 0)
                 
                 if bid and ask and price:
-                    mid_price = (bid + ask) / 2
-                    if price >= mid_price:
-                        big_ask_volume += size  # 外盤
-                    else:
-                        big_bid_volume += size  # 內盤
+                    # 接近賣價表示主動買進（外盤）
+                    if abs(price - ask) < abs(price - bid):
+                        big_ask_volume += size
+                    # 接近買價表示主動賣出（內盤）
+                    elif abs(price - bid) < abs(price - ask):
+                        big_bid_volume += size
+                    # 距離相等則不歸類
     
     if total_big_volume > 0:
         return {
@@ -319,29 +346,24 @@ def show_market_sentiment(market_data):
             trend = "+" if change > 0 else "-" if change < 0 else "="
             print(f"{name}: {stock.get('closePrice', 'N/A')} {trend}{change:.1f} ({change_pct:+.2f}%)")
 
-def calculate_vwap(candles_data):
-    """計算當日VWAP (成交量加權平均價)"""
-    if not candles_data or not candles_data.get('data'):
+def calculate_ema(prices, period):
+    """計算指數移動平均線 (EMA) - 修正版"""
+    if len(prices) < period:
         return None
     
-    total_pv = 0  # 價格×成交量總和
-    total_volume = 0  # 成交量總和
+    ema_values = []
+    multiplier = 2 / (period + 1)
     
-    for candle in candles_data['data']:
-        # 使用典型價格 (H+L+C)/3
-        high = candle.get('high', 0)
-        low = candle.get('low', 0)
-        close = candle.get('close', 0)
-        volume = candle.get('volume', 0)
-        
-        if volume > 0:
-            typical_price = (high + low + close) / 3
-            total_pv += typical_price * volume
-            total_volume += volume
+    # 第一個EMA值使用SMA
+    sma = sum(prices[:period]) / period
+    ema_values.append(sma)
     
-    if total_volume > 0:
-        return total_pv / total_volume
-    return None
+    # 後續EMA計算 - 從period開始
+    for i in range(period, len(prices)):
+        ema = (prices[i] * multiplier) + (ema_values[-1] * (1 - multiplier))
+        ema_values.append(ema)
+    
+    return ema_values
 
 def calculate_ma(prices, period):
     """計算移動平均線"""
@@ -436,34 +458,24 @@ def calculate_bollinger_bands(prices, period=20, std_dev=2):
     if len(prices) < period:
         return None
     
-    ma_values = calculate_ma(prices, period)
-    if not ma_values:
-        return None
-    
     bb_upper = []
     bb_lower = []
-    bb_middle = ma_values
+    bb_middle = []
     
-    # 修正：正確計算每個MA對應的標準差
-    for i in range(len(ma_values)):
-        # 計算對應的價格區間
-        price_end_idx = period + i  # MA的結束位置
-        price_start_idx = i         # MA的開始位置
+    for i in range(period - 1, len(prices)):
+        # 取得當前期間的價格
+        period_prices = prices[i - period + 1:i + 1]
         
-        period_prices = prices[price_start_idx:price_end_idx]
+        # 計算移動平均
+        mean = sum(period_prices) / period
+        bb_middle.append(mean)
         
-        if len(period_prices) == period:
-            mean = ma_values[i]
-            # 計算母體標準差
-            variance = sum((x - mean) ** 2 for x in period_prices) / period
-            std = math.sqrt(variance)
-            
-            bb_upper.append(mean + (std_dev * std))
-            bb_lower.append(mean - (std_dev * std))
-        else:
-            # 如果資料不足，使用MA值
-            bb_upper.append(ma_values[i])
-            bb_lower.append(ma_values[i])
+        # 計算標準差
+        variance = sum((x - mean) ** 2 for x in period_prices) / period
+        std = math.sqrt(variance)
+        
+        bb_upper.append(mean + (std_dev * std))
+        bb_lower.append(mean - (std_dev * std))
     
     current_price = prices[-1]
     current_upper = bb_upper[-1] if bb_upper else 0
@@ -501,14 +513,18 @@ def calculate_macd(prices):
     if not ema12 or not ema26:
         return None
     
-    # 修正：正確對齊EMA12和EMA26
-    # EMA26從第26個價格開始，EMA12從第12個價格開始
-    # 所以要讓它們的時間軸對齊，EMA12需要跳過前14個值 (26-12=14)
-    min_length = min(len(ema12), len(ema26))
-    ema12_aligned = ema12[-min_length:]
-    ema26_aligned = ema26[-min_length:]
+    # 由於EMA26比EMA12晚開始14個點，需要對齊
+    # EMA12 從第12個價格開始，EMA26 從第26個價格開始
+    # 所以 EMA12 需要從第 (26-12) = 14 個位置開始取值
+    start_offset = 26 - 12  # 14
+    ema12_aligned = ema12[start_offset:] if len(ema12) > start_offset else ema12
     
-    # 計算DIF (快線 - 慢線)
+    # 確保兩個數組長度相同
+    min_length = min(len(ema12_aligned), len(ema26))
+    ema12_aligned = ema12_aligned[:min_length]
+    ema26_aligned = ema26[:min_length]
+    
+    # 計算DIF
     dif = [ema12_aligned[i] - ema26_aligned[i] for i in range(len(ema26_aligned))]
     
     # 計算MACD (DIF的9日EMA)
@@ -522,7 +538,7 @@ def calculate_macd(prices):
     # 對齊DIF和MACD
     dif_aligned = dif[-len(macd):]
     
-    # 計算OSC (柱狀圖)
+    # 計算OSC
     osc = [dif_aligned[i] - macd[i] for i in range(len(macd))]
     
     return {
@@ -557,7 +573,7 @@ def calculate_kd(high_prices, low_prices, close_prices, k_period=9, d_period=3):
     if not rsv_values:
         return None
     
-    # 修正：使用正確的KD平滑化公式
+    # 傳統KD計算方式
     # K值 = (2/3) * 前一日K值 + (1/3) * 當日RSV
     # D值 = (2/3) * 前一日D值 + (1/3) * 當日K值
     k_values = []
@@ -566,16 +582,13 @@ def calculate_kd(high_prices, low_prices, close_prices, k_period=9, d_period=3):
     k_value = 50  # 初始K值
     d_value = 50  # 初始D值
     
-    smoothing_k = 1/3  # K值平滑因子
-    smoothing_d = 1/3  # D值平滑因子
-    
     for rsv in rsv_values:
-        # 計算K值
-        k_value = smoothing_k * rsv + (1 - smoothing_k) * k_value
+        # 計算K值 - 使用傳統公式
+        k_value = (2/3) * k_value + (1/3) * rsv
         k_values.append(k_value)
         
-        # 計算D值
-        d_value = smoothing_d * k_value + (1 - smoothing_d) * d_value
+        # 計算D值 - 使用傳統公式
+        d_value = (2/3) * d_value + (1/3) * k_value
         d_values.append(d_value)
     
     return {
