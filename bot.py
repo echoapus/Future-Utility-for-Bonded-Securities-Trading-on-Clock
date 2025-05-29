@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 # 導入您的 GaN 分析模組
 try:
-    from GaN import init_system, run_analysis_with_logout, login_success, sdk
+    from g2 import init_system, run_analysis_with_logout, login_success, sdk
 except ImportError:
     print("請確保 GaN.py 在同一目錄下")
     sys.exit(1)
@@ -80,11 +80,17 @@ class StockAnalysisBot:
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """開始指令"""
         welcome_text = """
-🤖 歡迎使用股票分析機器人！
+🤖 歡迎使用股票分析機器人！(增強版 v2.1)
 
 📈 功能說明：
 • 直接輸入股票代碼（如：2330）即可獲得完整分析
-• 支援台股即時報價、技術指標、大單分析等
+• 支援台股即時報價、技術指標、五檔力道分析等
+
+🎯 新增功能：
+• RSI 超買超賣分析
+• 布林通道位置判斷
+• 五檔買賣力道評估
+• 綜合技術面評分
 
 📋 可用指令：
 /start - 顯示歡迎訊息
@@ -116,13 +122,17 @@ class StockAnalysisBot:
 • 0050 → 元大台灣50分析
 
 📊 分析內容包含：
-• 即時價格與漲跌幅
-• 技術指標（MA、MACD、KD、VWAP）
-• 大單流向分析
-• 五檔報價
-• 成交明細
-• 分價量表
-• 簡易走勢圖
+• 💰 即時價格與漲跌幅
+• 📈 技術指標（MA5/10/20）
+• 🎯 MACD 多空訊號
+• 📊 KD 指標 & 交叉訊號
+• 🔥 RSI 超買超賣分析
+• 📏 布林通道位置
+• ⚖️ 五檔買賣力道
+• 💼 大單流向分析
+• 📋 綜合技術面評分
+• 📄 五檔報價 & 成交明細
+• 📊 分價量表 & 簡易走勢圖
 
 ⚙️ 系統指令：
 /status - 檢查連線狀態
@@ -142,18 +152,24 @@ class StockAnalysisBot:
         status_text = f"""
 🔧 系統狀態檢查
 
-機器人狀態: ✅ 運行中
+機器人狀態: ✅ 運行中 (增強版 v2.1)
 GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (已登出)'}
 富邦登入: {'✅ 已登入' if login_success else '❌ 未登入 (已登出)'}
 
 {('🟢 系統正常，可以查詢股票' if self.gan_initialized and login_success 
   else '🟡 系統已登出，下次查詢時會自動重新登入')}
+
+🆕 新功能狀態:
+• RSI 指標: ✅ 可用
+• 布林通道: ✅ 可用  
+• 五檔力道: ✅ 可用
+• 綜合評分: ✅ 可用
         """
         await update.message.reply_text(status_text)
     
     async def init_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """手動初始化指令"""
-        await update.message.reply_text("🔄 正在重新初始化系統...")
+        await update.message.reply_text("🔄 正在重新初始化增強版系統...")
         await self.initialize_gan_system(update, context)
     
     async def initialize_gan_system(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -168,9 +184,9 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
             
             if success:
                 self.gan_initialized = True
-                await init_msg.edit_text("✅ 系統初始化成功！現在可以查詢股票了。")
+                await init_msg.edit_text("✅ 增強版系統初始化成功！現在可以查詢股票了。")
             else:
-                await init_msg.edit_text("❌ 系統初始化失敗，請檢查網路連線或聯繫管理員。")
+                await init_msg.edit_text("❌ 增強版系統初始化失敗，請檢查網路連線或聯繫管理員。")
                 
         except Exception as e:
             logger.error(f"初始化失敗: {e}")
@@ -201,7 +217,7 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
                 return
         
         # 開始分析
-        analysis_msg = await update.message.reply_text(f"📊 正在分析 {user_input}...")
+        analysis_msg = await update.message.reply_text(f"📊 分析中")
         
         try:
             # 捕獲分析輸出
@@ -257,17 +273,25 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
             filename = f"{stock_code}_analysis_{timestamp}.txt"
             
             # 準備檔案內容
-            file_content = f"""股票分析報告
+            file_content = f"""股票分析報告 (增強版)
 ==========================================
 股票代碼: {stock_code}
 分析時間: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-系統版本: GaN Stock Analysis Bot v2.0
+系統版本: GaN Stock Analysis Bot v2.1 Enhanced
 ==========================================
 
 {analysis_content}
 
 ==========================================
-報告結束
+報告結束 - 增強版功能
+• RSI 超買超賣分析
+• 布林通道位置判斷  
+• 五檔買賣力道評估
+• 綜合技術面評分
+• 大單流向分析
+• KD 黃金/死亡交叉
+• VWAP 強弱判斷
+==========================================
 生成時間: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
             
@@ -281,31 +305,30 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
                 await update.message.reply_document(
                     document=file,
                     filename=filename,
-                    caption=f"📄 {stock_code} 完整分析報告\n時間: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                    caption=f"📄 {stock_code} 完整分析報告 (增強版)\n🕐 時間: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n📊 包含RSI、布林通道、五檔力道等新功能"
                 )
             
             # 清理臨時檔案
             os.unlink(temp_file_path)
             
-            logger.info(f"已成功發送 {stock_code} 的分析檔案")
+            logger.info(f"已成功發送 {stock_code} 的增強版分析檔案")
             
         except Exception as e:
             logger.error(f"發送分析檔案時發生錯誤: {e}")
             await update.message.reply_text(f"❌ 檔案生成失敗：{str(e)}")
     
     async def send_analysis_summary(self, update: Update, analysis_content: str, stock_code: str):
-        """發送分析摘要（簡化版本）"""
+        """發送分析摘要（增強版本）"""
         try:
             # 提取關鍵資訊製作摘要
-            summary = self.extract_summary(analysis_content, stock_code)
+            summary = self.extract_enhanced_summary(analysis_content, stock_code)
             
             # 構建摘要訊息
             summary_message = (
                 f"📋 {stock_code} 分析摘要\n"
-                f"{'='*25}\n"
-                f"{summary}\n\n"
-                f"📄 完整報告請查看上方的 TXT 檔案\n"
-                f"🔒 系統已自動登出確保安全"
+                f"{'='*30}\n"
+                f"{summary}\n"
+                f"{'='*30}\n"
             )
             
             await update.message.reply_text(summary_message)
@@ -315,19 +338,21 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
             # 發送簡化的成功訊息
             fallback_message = (
                 f"✅ {stock_code} 分析完成\n\n"
-                f"📄 完整報告請查看上方的 TXT 檔案\n" 
-                f"🔒 系統已自動登出確保安全"
             )
             try:
                 await update.message.reply_text(fallback_message)
             except Exception as fallback_error:
                 logger.error(f"發送備用訊息也失敗: {fallback_error}")
     
-    def extract_summary(self, analysis_content: str, stock_code: str):
-        """從完整分析中提取關鍵摘要"""
+    def extract_enhanced_summary(self, analysis_content: str, stock_code: str):
+        """從完整分析中提取關鍵摘要（增強版）"""
         try:
             lines = analysis_content.split('\n')
             summary_parts = []
+            
+            # 用於儲存特殊資訊
+            vwap_info = {'value': None, 'status': None, 'current_price': None}
+            order_book_info = {'bid_total': 0, 'ask_total': 0, 'sentiment': None}
             
             # 尋找關鍵資訊
             for i, line in enumerate(lines):
@@ -336,43 +361,153 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
                 # 股價資訊
                 if '目前價格:' in line:
                     summary_parts.append(f"💰 {line}")
+                    # 提取現價用於 VWAP 對照
+                    try:
+                        import re
+                        price_match = re.search(r'目前價格:\s*([0-9.]+)', line)
+                        if price_match:
+                            vwap_info['current_price'] = float(price_match.group(1))
+                    except:
+                        pass
                 
-                # 技術指標
-                elif line.startswith('MA5:') and i+1 < len(lines) and 'MA10:' in lines[i+1]:
-                    summary_parts.append(f"📈 {line}")
-                    if lines[i+1].strip().startswith('MA10:'):
-                        summary_parts.append(f"📈 {lines[i+1].strip()}")
+                # VWAP 資訊收集
+                elif line.startswith('VWAP:') and '股價' in line:
+                    try:
+                        import re
+                        # 提取 VWAP 數值: "VWAP: 95.14 (股價+2.35%)"
+                        vwap_match = re.search(r'VWAP:\s*([0-9.]+)', line)
+                        if vwap_match:
+                            vwap_info['value'] = float(vwap_match.group(1))
+                    except:
+                        pass
+                elif 'VWAP狀態:' in line:
+                    vwap_info['status'] = line.replace('VWAP狀態:', '').strip()
+                
+                # 五檔力道資訊收集
+                elif '買盤力道:' in line and '%' in line:
+                    try:
+                        import re
+                        # 提取買盤張數: "買盤力道: 45.2% (1200張)"
+                        bid_match = re.search(r'\(([0-9,]+)張\)', line)
+                        if bid_match:
+                            order_book_info['bid_total'] = int(bid_match.group(1).replace(',', ''))
+                    except:
+                        pass
+                elif '賣盤力道:' in line and '%' in line:
+                    try:
+                        import re
+                        # 提取賣盤張數: "賣盤力道: 54.8% (1460張)"
+                        ask_match = re.search(r'\(([0-9,]+)張\)', line)
+                        if ask_match:
+                            order_book_info['ask_total'] = int(ask_match.group(1).replace(',', ''))
+                    except:
+                        pass
+                elif '市場情緒:' in line:
+                    order_book_info['sentiment'] = line.replace('市場情緒:', '').strip()
+                
+                # 技術指標摘要
+                elif line.startswith('MA5:') and i+2 < len(lines):
+                    # 收集 MA 資訊
+                    ma_info = []
+                    for j in range(3):  # MA5, MA10, MA20
+                        if i+j < len(lines) and ('MA' in lines[i+j] or '股價 vs MA' in lines[i+j]):
+                            ma_line = lines[i+j].strip()
+                            if ma_line.startswith('MA'):
+                                ma_info.append(ma_line)
+                    if ma_info:
+                        summary_parts.append(f"📈 {' | '.join(ma_info[:2])}")
+                
+                # MA 排列
+                elif 'MA排列:' in line:
+                    summary_parts.append(f"📊 {line}")
+                
+                # RSI 狀態 (新增)
+                elif 'RSI狀態:' in line:
+                    rsi_line = None
+                    # 找前一行的 RSI 數值
+                    if i > 0:
+                        prev_line = lines[i-1].strip()
+                        if prev_line.startswith('RSI:'):
+                            rsi_line = prev_line
+                    summary_parts.append(f"🔥 {rsi_line + ' ' if rsi_line else ''}{line}")
+                
+                # 布林通道狀態 (新增)
+                elif '布林狀態:' in line:
+                    summary_parts.append(f"📏 {line}")
                 
                 # MACD 訊號
                 elif 'MACD訊號:' in line:
                     summary_parts.append(f"🎯 {line}")
                 
-                # KD 狀態
+                # KD 狀態和交叉
                 elif 'KD狀態:' in line:
                     summary_parts.append(f"📊 {line}")
+                elif 'KD訊號:' in line and ('黃金交叉' in line or '死亡交叉' in line):
+                    summary_parts.append(f"⚡ {line}")
                 
-                # 大單資訊
-                elif line.startswith('大單:') and ('筆' in line or '張' in line):
+                # 大單趨勢 (新增)
+                elif '大單趨勢:' in line:
                     summary_parts.append(f"💼 {line}")
                 
-                # MA 排列
-                elif 'MA排列:' in line:
-                    summary_parts.append(f"📊 {line}")
+                # 綜合技術分析評分 (新增)
+                elif '技術面評價:' in line:
+                    # 尋找前一行的評分
+                    score_line = None
+                    if i > 0 and '技術面評分:' in lines[i-1]:
+                        score_line = lines[i-1].strip()
+                    summary_parts.append(f"🏆 {score_line + ' | ' if score_line else ''}{line}")
+            
+            # 生成 VWAP 對照資訊
+            if vwap_info['value'] and vwap_info['current_price'] and vwap_info['status']:
+                vwap_summary = f"🧭 VWAP: {vwap_info['value']:.2f} ｜目前價格{vwap_info['status'].replace('股價', '').replace('VWAP', 'VWAP')}"
+                summary_parts.insert(1, vwap_summary)  # 插入到股價後面
+            
+            # 生成五檔買賣力道概況
+            if order_book_info['bid_total'] > 0 and order_book_info['ask_total'] > 0:
+                # 判斷上壓下撐
+                if order_book_info['ask_total'] > order_book_info['bid_total']:
+                    pressure_situation = "上壓>下撐"
+                    pressure_detail = f"賣1~賣3 共{order_book_info['ask_total']:,}張 vs 買1~買3 約{order_book_info['bid_total']:,}張"
+                elif order_book_info['bid_total'] > order_book_info['ask_total']:
+                    pressure_situation = "下撐>上壓"
+                    pressure_detail = f"買1~買3 共{order_book_info['bid_total']:,}張 vs 賣1~賣3 約{order_book_info['ask_total']:,}張"
+                else:
+                    pressure_situation = "上壓≈下撐"
+                    pressure_detail = f"買賣力道均衡 約{order_book_info['bid_total']:,}張"
+                
+                order_book_summary = f"📦 五檔：{pressure_situation}（{pressure_detail}）"
+                summary_parts.insert(2, order_book_summary)  # 插入到 VWAP 後面
             
             # 如果沒有找到關鍵資訊，返回基本摘要
             if not summary_parts:
-                return f"✅ 已完成 {stock_code} 分析\n📄 請查看 TXT 檔案獲取完整報告"
+                return f"✅ 已完成 {stock_code} 增強版分析\n📄 請查看 TXT 檔案獲取完整報告"
             
-            # 限制摘要長度，最多顯示6行關鍵資訊
-            return '\n'.join(summary_parts[:6])
+            # 限制摘要長度，優先顯示重要資訊
+            important_keywords = ['目前價格', 'VWAP:', '五檔：', '技術面評價', 'RSI狀態', '市場情緒', 'MA排列', 'MACD訊號']
+            
+            # 先取重要資訊
+            important_parts = []
+            other_parts = []
+            
+            for part in summary_parts:
+                is_important = any(keyword in part for keyword in important_keywords)
+                if is_important:
+                    important_parts.append(part)
+                else:
+                    other_parts.append(part)
+            
+            # 組合摘要，重要資訊優先，總共最多10行（增加2行給新功能）
+            selected_parts = important_parts[:8] + other_parts[:2]
+            
+            return '\n'.join(selected_parts[:10])
             
         except Exception as e:
-            logger.error(f"提取摘要時發生錯誤: {e}")
-            return f"✅ 已完成 {stock_code} 分析\n📄 請查看 TXT 檔案獲取完整報告"
+            logger.error(f"提取增強版摘要時發生錯誤: {e}")
+            return f"✅ 已完成 {stock_code} 增強版分析\n📄 請查看 TXT 檔案獲取完整報告"
     
     def run(self):
         """啟動機器人"""
-        logger.info("股票分析機器人啟動中...")
+        logger.info("股票分析機器人 (增強版 v2.1) 啟動中...")
         self.app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 def main():
@@ -389,11 +524,12 @@ def main():
     bot = StockAnalysisBot(bot_token)
     
     try:
+        print("🚀 啟動中")
         bot.run()
     except KeyboardInterrupt:
         logger.info("機器人已停止")
     except Exception as e:
-        logger.error(f"機器人運行錯誤: {e}")
+        logger.error(f"運行錯誤: {e}")
 
 if __name__ == "__main__":
     main()

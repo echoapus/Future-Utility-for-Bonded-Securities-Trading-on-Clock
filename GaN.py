@@ -2,6 +2,7 @@ from login_helper import login
 import time
 import threading
 import sys
+import math
 
 # 全域變數
 sdk = None
@@ -79,6 +80,86 @@ def analyze_big_orders(trades_data):
             'orders': big_orders[:5]  # 只顯示前5筆
         }
     return None
+
+def analyze_order_book_strength(quote_data):
+    """分析五檔買賣力道"""
+    if not quote_data:
+        return None
+    
+    bids = quote_data.get('bids', [])
+    asks = quote_data.get('asks', [])
+    
+    if not bids or not asks:
+        return None
+    
+    # 計算買賣壓力
+    total_bid_size = sum(bid.get('size', 0) for bid in bids)
+    total_ask_size = sum(ask.get('size', 0) for ask in asks)
+    total_size = total_bid_size + total_ask_size
+    
+    if total_size == 0:
+        return None
+    
+    # 計算價格加權的買賣力道
+    current_price = quote_data.get('lastPrice') or quote_data.get('closePrice', 0)
+    if current_price == 0:
+        return None
+    
+    # 買盤力道 (距離現價越近權重越高)
+    bid_strength = 0
+    for i, bid in enumerate(bids):
+        price = bid.get('price', 0)
+        size = bid.get('size', 0)
+        if price > 0:
+            distance_ratio = price / current_price  # 距離現價比例
+            weight = distance_ratio * (1 - i * 0.1)  # 檔次權重遞減
+            bid_strength += size * weight
+    
+    # 賣盤力道 (距離現價越近權重越高)
+    ask_strength = 0
+    for i, ask in enumerate(asks):
+        price = ask.get('price', 0)
+        size = ask.get('size', 0)
+        if price > 0:
+            distance_ratio = current_price / price  # 距離現價比例
+            weight = distance_ratio * (1 - i * 0.1)  # 檔次權重遞減
+            ask_strength += size * weight
+    
+    # 計算力道比例
+    total_strength = bid_strength + ask_strength
+    if total_strength == 0:
+        return None
+    
+    bid_ratio = (bid_strength / total_strength) * 100
+    ask_ratio = (ask_strength / total_strength) * 100
+    
+    # 判斷買賣勢力
+    if bid_ratio > 60:
+        market_sentiment = "買盤強勢"
+    elif ask_ratio > 60:
+        market_sentiment = "賣盤強勢"
+    else:
+        market_sentiment = "買賣均衡"
+    
+    # 計算價差分析
+    best_bid = bids[0].get('price', 0) if bids else 0
+    best_ask = asks[0].get('price', 0) if asks else 0
+    spread = best_ask - best_bid if best_ask > 0 and best_bid > 0 else 0
+    spread_pct = (spread / current_price) * 100 if current_price > 0 and spread > 0 else 0
+    
+    return {
+        'total_bid_size': total_bid_size,
+        'total_ask_size': total_ask_size,
+        'bid_ratio': bid_ratio,
+        'ask_ratio': ask_ratio,
+        'bid_strength': bid_strength,
+        'ask_strength': ask_strength,
+        'market_sentiment': market_sentiment,
+        'spread': spread,
+        'spread_pct': spread_pct,
+        'best_bid': best_bid,
+        'best_ask': best_ask
+    }
 
 def get_market_overview(reststock):
     """取得大盤概況"""
@@ -249,6 +330,113 @@ def calculate_ema(prices, period):
     
     return ema_values
 
+def calculate_rsi(prices, period=14):
+    """計算RSI指標"""
+    if len(prices) < period + 1:
+        return None
+    
+    # 計算價格變化
+    gains = []
+    losses = []
+    
+    for i in range(1, len(prices)):
+        change = prices[i] - prices[i-1]
+        if change > 0:
+            gains.append(change)
+            losses.append(0)
+        else:
+            gains.append(0)
+            losses.append(abs(change))
+    
+    if len(gains) < period:
+        return None
+    
+    # 計算第一個RS值
+    avg_gain = sum(gains[:period]) / period
+    avg_loss = sum(losses[:period]) / period
+    
+    if avg_loss == 0:
+        return 100  # 避免除零
+    
+    rs_values = []
+    rsi_values = []
+    
+    # 第一個RSI
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    rs_values.append(rs)
+    rsi_values.append(rsi)
+    
+    # 後續RSI (使用平滑移動平均)
+    for i in range(period, len(gains)):
+        avg_gain = (avg_gain * (period - 1) + gains[i]) / period
+        avg_loss = (avg_loss * (period - 1) + losses[i]) / period
+        
+        if avg_loss == 0:
+            rs = float('inf')
+            rsi = 100
+        else:
+            rs = avg_gain / avg_loss
+            rsi = 100 - (100 / (1 + rs))
+        
+        rs_values.append(rs)
+        rsi_values.append(rsi)
+    
+    return {
+        'current': rsi_values[-1] if rsi_values else 50,
+        'history': rsi_values[-5:] if len(rsi_values) >= 5 else rsi_values
+    }
+
+def calculate_bollinger_bands(prices, period=20, std_dev=2):
+    """計算布林通道"""
+    if len(prices) < period:
+        return None
+    
+    ma_values = calculate_ma(prices, period)
+    if not ma_values:
+        return None
+    
+    bb_upper = []
+    bb_lower = []
+    bb_middle = ma_values
+    
+    for i in range(len(ma_values)):
+        # 計算對應期間的標準差
+        start_idx = i
+        end_idx = i + period
+        period_prices = prices[start_idx:end_idx]
+        
+        if len(period_prices) == period:
+            mean = ma_values[i]
+            variance = sum((x - mean) ** 2 for x in period_prices) / period
+            std = math.sqrt(variance)
+            
+            bb_upper.append(mean + (std_dev * std))
+            bb_lower.append(mean - (std_dev * std))
+        else:
+            bb_upper.append(ma_values[i])
+            bb_lower.append(ma_values[i])
+    
+    current_price = prices[-1]
+    current_upper = bb_upper[-1] if bb_upper else 0
+    current_lower = bb_lower[-1] if bb_lower else 0
+    current_middle = bb_middle[-1] if bb_middle else 0
+    
+    # 計算價格在布林通道中的位置
+    if current_upper != current_lower:
+        bb_position = (current_price - current_lower) / (current_upper - current_lower)
+    else:
+        bb_position = 0.5
+    
+    return {
+        'upper': current_upper,
+        'middle': current_middle,
+        'lower': current_lower,
+        'position': bb_position,
+        'width': current_upper - current_lower,
+        'squeeze': (current_upper - current_lower) / current_middle if current_middle > 0 else 0
+    }
+
 def calculate_macd(prices):
     """計算MACD指標"""
     if len(prices) < 26:
@@ -391,7 +579,17 @@ def analyze_stock_complete(reststock, symbol):
             print(f"開盤:{quote.get('openPrice')} 最高:{quote.get('highPrice')} 最低:{quote.get('lowPrice')}")
             print(f"成交量:{quote.get('total',{}).get('tradeVolume',0):,}張")
         
-        # === 3. 技術指標分析 ===
+        # === 3. 五檔買賣力道分析 ===
+        order_book_analysis = analyze_order_book_strength(quote)
+        if order_book_analysis:
+            print(f"\n五檔買賣力道")
+            print("-" * 30)
+            print(f"買盤力道: {order_book_analysis['bid_ratio']:.1f}% ({order_book_analysis['total_bid_size']:,}張)")
+            print(f"賣盤力道: {order_book_analysis['ask_ratio']:.1f}% ({order_book_analysis['total_ask_size']:,}張)")
+            print(f"市場情緒: {order_book_analysis['market_sentiment']}")
+            print(f"買賣價差: {order_book_analysis['spread']:.2f} ({order_book_analysis['spread_pct']:.3f}%)")
+        
+        # === 4. 技術指標分析 ===
         if historical_data and historical_data.get('data'):
             candles = historical_data['data']
             close_prices = [candle.get('close', 0) for candle in candles]
@@ -407,29 +605,66 @@ def analyze_stock_complete(reststock, symbol):
             print(f"\n技術指標分析")
             print("-" * 30)
             
-            # MA5/MA10
-            if len(close_prices) >= 10:
+            # MA5/MA10/MA20
+            if len(close_prices) >= 20:
                 ma5_values = calculate_ma(close_prices, 5)
                 ma10_values = calculate_ma(close_prices, 10)
+                ma20_values = calculate_ma(close_prices, 20)
                 
-                if ma5_values and ma10_values:
+                if ma5_values and ma10_values and ma20_values:
                     current_ma5 = ma5_values[-1]
                     current_ma10 = ma10_values[-1]
+                    current_ma20 = ma20_values[-1]
                     
                     print(f"MA5:  {current_ma5:.2f}")
                     print(f"MA10: {current_ma10:.2f}")
+                    print(f"MA20: {current_ma20:.2f}")
                     
                     if current_price:
                         ma5_diff = ((current_price - current_ma5) / current_ma5) * 100
                         ma10_diff = ((current_price - current_ma10) / current_ma10) * 100
+                        ma20_diff = ((current_price - current_ma20) / current_ma20) * 100
                         print(f"股價 vs MA5:  {ma5_diff:+.2f}% ({'上方' if ma5_diff > 0 else '下方'})")
                         print(f"股價 vs MA10: {ma10_diff:+.2f}% ({'上方' if ma10_diff > 0 else '下方'})")
+                        print(f"股價 vs MA20: {ma20_diff:+.2f}% ({'上方' if ma20_diff > 0 else '下方'})")
                         
                         # MA排列
-                        if ma5_values[-1] > ma10_values[-1]:
-                            print("MA排列: 多頭 (MA5 > MA10)")
+                        if ma5_values[-1] > ma10_values[-1] > ma20_values[-1]:
+                            print("MA排列: 多頭 (MA5 > MA10 > MA20)")
+                        elif ma5_values[-1] < ma10_values[-1] < ma20_values[-1]:
+                            print("MA排列: 空頭 (MA5 < MA10 < MA20)")
                         else:
-                            print("MA排列: 空頭 (MA5 < MA10)")
+                            print("MA排列: 糾結")
+            
+            # RSI
+            if len(close_prices) >= 15:
+                rsi_data = calculate_rsi(close_prices)
+                if rsi_data:
+                    rsi = rsi_data['current']
+                    print(f"\nRSI: {rsi:.1f}")
+                    if rsi > 70:
+                        print("RSI狀態: 超買")
+                    elif rsi < 30:
+                        print("RSI狀態: 超賣")
+                    else:
+                        print("RSI狀態: 正常")
+            
+            # 布林通道
+            if len(close_prices) >= 20:
+                bb_data = calculate_bollinger_bands(close_prices)
+                if bb_data and current_price:
+                    print(f"\n布林通道:")
+                    print(f"上軌: {bb_data['upper']:.2f}")
+                    print(f"中軌: {bb_data['middle']:.2f}")
+                    print(f"下軌: {bb_data['lower']:.2f}")
+                    print(f"位置: {bb_data['position']*100:.1f}% ({'上半部' if bb_data['position'] > 0.5 else '下半部'})")
+                    
+                    if bb_data['position'] > 0.8:
+                        print("布林狀態: 接近上軌")
+                    elif bb_data['position'] < 0.2:
+                        print("布林狀態: 接近下軌")
+                    else:
+                        print("布林狀態: 通道中間")
             
             # MACD
             if len(close_prices) >= 26:
@@ -447,7 +682,7 @@ def analyze_stock_complete(reststock, symbol):
                 if kd_data:
                     k_val = kd_data['k']
                     d_val = kd_data['d']
-                    print(f"KD: K:{k_val:.1f} D:{d_val:.1f}")
+                    print(f"\nKD: K:{k_val:.1f} D:{d_val:.1f}")
                     
                     if k_val > 80:
                         print("KD狀態: 超買")
@@ -455,67 +690,182 @@ def analyze_stock_complete(reststock, symbol):
                         print("KD狀態: 超賣")
                     else:
                         print("KD狀態: 正常")
+                    
+                    # KD交叉
+                    if len(kd_data['k_history']) >= 2 and len(kd_data['d_history']) >= 2:
+                        k_prev = kd_data['k_history'][-2]
+                        d_prev = kd_data['d_history'][-2]
+                        if k_prev <= d_prev and k_val > d_val:
+                            print("KD訊號: 黃金交叉")
+                        elif k_prev >= d_prev and k_val < d_val:
+                            print("KD訊號: 死亡交叉")
         
-        # === 4. VWAP ===
+        # === 5. VWAP ===
         current_vwap = calculate_vwap(candles_1m)
         if current_vwap and current_price:
             vwap_diff = ((current_price - current_vwap) / current_vwap) * 100
-            print(f"VWAP: {current_vwap:.2f} (股價{vwap_diff:+.2f}%)")
+            print(f"\nVWAP: {current_vwap:.2f} (股價{vwap_diff:+.2f}%)")
+            if vwap_diff > 0:
+                print("VWAP狀態: 股價高於VWAP (偏強)")
+            else:
+                print("VWAP狀態: 股價低於VWAP (偏弱)")
         
-        # === 5. 大單分析 ===
+        # === 6. 大單分析 ===
         big_orders = analyze_big_orders(trades)
         if big_orders:
             print(f"\n大單流向 (50張以上)")
             print("-" * 30)
             print(f"大單: {big_orders['total_orders']}筆 {big_orders['total_volume']:,}張")
             if big_orders['bid_volume'] > 0 or big_orders['ask_volume'] > 0:
-                print(f"內盤:{big_orders['bid_volume']:,}張 外盤:{big_orders['ask_volume']:,}張")
+                print(f"內盤大單:{big_orders['bid_volume']:,}張 ({big_orders['bid_ratio']:.1f}%)")
+                print(f"外盤大單:{big_orders['ask_volume']:,}張 ({big_orders['ask_ratio']:.1f}%)")
+                
+                if big_orders['ask_ratio'] > big_orders['bid_ratio']:
+                    print("大單趨勢: 積極買進")
+                elif big_orders['bid_ratio'] > big_orders['ask_ratio']:
+                    print("大單趨勢: 積極賣出")
+                else:
+                    print("大單趨勢: 均衡")
         
-        # === 6. 簡易走勢圖 ===
+        # === 7. 簡易走勢圖 ===
         draw_simple_chart(candles_1m)
         
-        # === 7. 五檔報價 ===
+        # === 8. 五檔報價 ===
         if quote:
             print(f"\n五檔報價")
-            print("-" * 15)
-            asks = quote.get('asks', [])[:3]
-            bids = quote.get('bids', [])[:3]
+            print("-" * 20)
+            asks = quote.get('asks', [])[:5]
+            bids = quote.get('bids', [])[:5]
             
+            # 顯示賣檔
             for i, ask in enumerate(asks, 1):
-                print(f"賣{i}:{ask.get('price'):>6}({ask.get('size'):>3}張)")
-            print(f"現價:{current_price:>6}")
+                size = ask.get('size', 0)
+                price = ask.get('price', 0)
+                print(f"賣{i}: {price:>6.2f} ({size:>4}張)")
+            
+            print(f"{'現價':>4}: {current_price:>6.2f}")
+            print("-" * 20)
+            
+            # 顯示買檔
             for i, bid in enumerate(bids, 1):
-                print(f"買{i}:{bid.get('price'):>6}({bid.get('size'):>3}張)")
+                size = bid.get('size', 0)
+                price = bid.get('price', 0)
+                print(f"買{i}: {price:>6.2f} ({size:>4}張)")
         
-        # === 8. 成交明細 ===
+        # === 9. 成交明細 ===
         if trades and trades.get('data'):
-            print(f"\n成交明細")
-            print("-" * 15)
+            print(f"\n成交明細 (最近5筆)")
+            print("-" * 25)
+            print("時間     價格  張數")
+            print("-" * 25)
             for trade in trades['data'][:5]:
-                t = time.strftime('%H:%M:%S', time.localtime(trade.get('time',0)/1000000))
+                timestamp = trade.get('time', 0)
+                if timestamp > 0:
+                    t = time.strftime('%H:%M:%S', time.localtime(timestamp/1000000))
+                else:
+                    t = "N/A"
                 size = trade.get('size', 0)
+                price = trade.get('price', 0)
                 size_mark = " *" if size >= 50 else ""
-                print(f"{t} {trade.get('price'):>5} {size:>3}張{size_mark}")
+                print(f"{t} {price:>6.2f} {size:>4}張{size_mark}")
         
-        # === 9. 分價量表 ===
+        # === 10. 分價量表 ===
         if volumes and volumes.get('data'):
-            print(f"\n分價量表")
-            print("-" * 20)
-            print("價格  總量  內盤  外盤")
-            print("-" * 20)
+            print(f"\n分價量表 (前5檔)")
+            print("-" * 25)
+            print(" 價格   總量  內盤  外盤")
+            print("-" * 25)
             data = sorted(volumes['data'], key=lambda x: x.get('price', 0), reverse=True)
             for item in data[:5]:
                 price_vol = item.get('price', 0)
                 volume = item.get('volume', 0)
                 bid_vol = item.get('volumeAtBid', 0)
                 ask_vol = item.get('volumeAtAsk', 0)
-                print(f"{price_vol:>4} {volume:>5} {bid_vol:>5} {ask_vol:>5}")
+                print(f"{price_vol:>5.1f} {volume:>6} {bid_vol:>5} {ask_vol:>5}")
+        
+        # === 11. 綜合評分 ===
+        print(f"\n綜合技術分析評分")
+        print("-" * 30)
+        
+        score = 0
+        total_indicators = 0
+        
+        # MA評分
+        if len(close_prices) >= 10 and current_price:
+            ma5_values = calculate_ma(close_prices, 5)
+            ma10_values = calculate_ma(close_prices, 10)
+            if ma5_values and ma10_values:
+                if current_price > ma5_values[-1]:
+                    score += 1
+                if current_price > ma10_values[-1]:
+                    score += 1
+                if ma5_values[-1] > ma10_values[-1]:
+                    score += 1
+                total_indicators += 3
+        
+        # RSI評分
+        if len(close_prices) >= 15:
+            rsi_data = calculate_rsi(close_prices)
+            if rsi_data:
+                rsi = rsi_data['current']
+                if 30 < rsi < 70:
+                    score += 1  # 正常區間
+                if rsi > 50:
+                    score += 1  # 偏多
+                total_indicators += 2
+        
+        # MACD評分
+        if len(close_prices) >= 26:
+            macd_data = calculate_macd(close_prices)
+            if macd_data:
+                if macd_data['dif'] > macd_data['macd']:
+                    score += 1
+                if macd_data['osc'] > 0:
+                    score += 1
+                total_indicators += 2
+        
+        # KD評分
+        if len(close_prices) >= 9:
+            kd_data = calculate_kd(high_prices, low_prices, close_prices)
+            if kd_data:
+                if kd_data['k'] > kd_data['d']:
+                    score += 1
+                if 20 < kd_data['k'] < 80:
+                    score += 1  # 正常區間
+                total_indicators += 2
+        
+        # VWAP評分
+        if current_vwap and current_price:
+            if current_price > current_vwap:
+                score += 1
+            total_indicators += 1
+        
+        # 五檔力道評分
+        if order_book_analysis:
+            if order_book_analysis['bid_ratio'] > 55:
+                score += 1
+            total_indicators += 1
+        
+        if total_indicators > 0:
+            final_score = (score / total_indicators) * 100
+            print(f"技術面評分: {score}/{total_indicators} ({final_score:.1f}%)")
+            
+            if final_score >= 70:
+                print("技術面評價: 強勢")
+            elif final_score >= 50:
+                print("技術面評價: 中性偏多")
+            elif final_score >= 30:
+                print("技術面評價: 中性偏空")
+            else:
+                print("技術面評價: 弱勢")
         
         print(f"{'='*60}")
         return True
         
     except Exception as e:
         print(f"分析失敗: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def init_system():
