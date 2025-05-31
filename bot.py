@@ -323,9 +323,11 @@ GaN系統: {'✅ 已初始化' if self.gan_initialized else '❌ 未初始化 (�
             # 提取關鍵資訊製作摘要
             summary = self.extract_enhanced_summary(analysis_content, stock_code)
             
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # 構建摘要訊息
             summary_message = (
                 f"📋 {stock_code} 分析摘要\n"
+                f"🕐 分析時間: {current_time}\n"
                 f"{'='*30}\n"
                 f"{summary}\n"
                 f"{'='*30}\n"
