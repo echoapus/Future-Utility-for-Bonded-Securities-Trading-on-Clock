@@ -59,7 +59,7 @@ def main():
         price_type=PriceType.Limit,
         time_in_force=TimeInForce.ROD,
         order_type=OrderType.Stock,
-        user_def="FullLot"
+        user_def="FullLot",
     )
 
     result = sdk.stock.place_order(account, order, unblock=False)

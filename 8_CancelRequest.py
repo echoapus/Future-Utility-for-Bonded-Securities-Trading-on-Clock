@@ -12,15 +12,21 @@ stock_id = input("請輸入要取消的股票代號（如 2897）：").strip()
 result = sdk.stock.get_order_results(account)
 
 if result.is_success and result.data:
-    to_cancel = [o for o in result.data if o.stock_no ==
-                 stock_id and o.filled_qty < o.quantity and o.status not in [30, 40, 50]]
+    to_cancel = [
+        o
+        for o in result.data
+        if o.stock_no == stock_id
+        and o.filled_qty < o.quantity
+        and o.status not in [30, 40, 50]
+    ]
 
     if to_cancel:
         print(f"\n🔍 找到 {len(to_cancel)} 筆待取消的 {stock_id} 委託單：")
         for order in to_cancel:
             status_text = STATUS_MAP.get(order.status, f"未知狀態碼 {order.status}")
             print(
-                f"▶️ 委託書號 {order.order_no}｜數量 {order.quantity}｜成交 {order.filled_qty}｜價格 {order.price}｜時間 {order.last_time}｜狀態 {status_text}")
+                f"▶️ 委託書號 {order.order_no}｜數量 {order.quantity}｜成交 {order.filled_qty}｜價格 {order.price}｜時間 {order.last_time}｜狀態 {status_text}"
+            )
 
             cancel_result = sdk.stock.cancel_order(account, order)
             if cancel_result.is_success:

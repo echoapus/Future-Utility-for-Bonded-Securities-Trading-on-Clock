@@ -23,6 +23,7 @@ def async_login():
         print("❌ 背景登入失敗：", e)
         login_done.set()
 
+
 # 美化委託單資訊輸出
 
 
@@ -40,6 +41,7 @@ def print_order_result(order):
     print(f"  狀態代碼      ：{order.status}（{status_label}）")
     print(f"  下單時間      ：{order.last_time}")
     print(f"  Debug 買賣別  ：{order.buy_sell}")
+
 
 # 主程式
 

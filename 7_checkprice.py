@@ -8,13 +8,14 @@ import unicodedata
 def calc_display_width(text):
     width = 0
     for ch in text:
-        width += 2 if unicodedata.east_asian_width(ch) in ('F', 'W') else 1
+        width += 2 if unicodedata.east_asian_width(ch) in ("F", "W") else 1
     return width
 
 
 def pad_name(name, total_width=10):
     real_width = calc_display_width(name)
-    return name + ' ' * (total_width - real_width)
+    return name + " " * (total_width - real_width)
+
 
 # 查單一股票報價
 
@@ -28,16 +29,21 @@ def query_quote(stock_id):
 
         return {
             "id": stock.sid,
-            "name": twstock.codes.get(
-                stock.sid).name if stock.sid in twstock.codes else "未知",
+            "name": (
+                twstock.codes.get(stock.sid).name
+                if stock.sid in twstock.codes
+                else "未知"
+            ),
             "date": latest.date,
             "open": latest.open,
             "high": latest.high,
             "low": latest.low,
             "close": latest.close,
-            "capacity": latest.capacity}
+            "capacity": latest.capacity,
+        }
     except Exception:
         return None
+
 
 # 主互動邏輯
 
@@ -51,18 +57,22 @@ def main():
 
     if result:
         name_fixed = pad_name(result["name"], 10)
-        print("股票代號｜名稱　　　　｜日期　　　｜開盤　｜最高　｜最低　｜收盤　｜成交張數")
+        print(
+            "股票代號｜名稱　　　　｜日期　　　｜開盤　｜最高　｜最低　｜收盤　｜成交張數"
+        )
         print("---------------------------------------------------------------")
-        print("{:<8}｜{}｜{}｜{:>6.2f}｜{:>6.2f}｜{:>6.2f}｜{:>6.2f}｜{:>10}".format(
-            result["id"],
-            name_fixed,
-            result["date"].strftime("%Y-%m-%d"),
-            result["open"],
-            result["high"],
-            result["low"],
-            result["close"],
-            int(result["capacity"] / 1000)
-        ))
+        print(
+            "{:<8}｜{}｜{}｜{:>6.2f}｜{:>6.2f}｜{:>6.2f}｜{:>6.2f}｜{:>10}".format(
+                result["id"],
+                name_fixed,
+                result["date"].strftime("%Y-%m-%d"),
+                result["open"],
+                result["high"],
+                result["low"],
+                result["close"],
+                int(result["capacity"] / 1000),
+            )
+        )
         print("\n查詢時間：", datetime.now().strftime("%Y-%m-%d %H:%M"))
     else:
         print("❌ 查無資料，請確認股票代號是否正確。")

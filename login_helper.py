@@ -21,7 +21,7 @@ def login():
         config["personal_id"],
         config["password"],
         config["cert_path"],
-        config["cert_pass"]
+        config["cert_pass"],
     )
 
     if hasattr(accounts, "data") and accounts.data:

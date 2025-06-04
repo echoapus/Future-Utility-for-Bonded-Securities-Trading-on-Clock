@@ -18,10 +18,7 @@ config["cert_pass"] = os.getenv("FUBON_CERT_PASS")
 # 初始化 SDK 並登入
 sdk = FubonSDK()
 accounts = sdk.login(
-    config["personal_id"],
-    config["password"],
-    config["cert_path"],
-    config["cert_pass"]
+    config["personal_id"], config["password"], config["cert_path"], config["cert_pass"]
 )
 
 # 檢查登入結果
