@@ -1,0 +1,4 @@
+pandas==2.2.3
+python-dotenv==1.1.0
+python-telegram-bot==22.1
+twstock==1.4.0
