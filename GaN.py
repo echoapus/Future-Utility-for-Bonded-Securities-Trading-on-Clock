@@ -1,3 +1,11 @@
+# GaN.py - 股票技術分析系統
+# 版本: v2.1.1 (A1/A2 邏輯修正版)
+# 修正時間: 2025-06-04 12:01:29
+# 修正內容:
+#   A1: 修正MA排列邏輯矛盾問題
+#   A2: 修正MACD訊號判定邏輯
+# ================================
+
 from login_helper import login
 import time
 import threading
@@ -697,13 +705,30 @@ def analyze_stock_complete(reststock, symbol):
                         print(f"股價 vs MA10: {ma10_diff:+.2f}% ({'上方' if ma10_diff > 0 else '下方'})")
                         print(f"股價 vs MA20: {ma20_diff:+.2f}% ({'上方' if ma20_diff > 0 else '下方'})")
                         
-                        # MA排列
-                        if ma5_values[-1] > ma10_values[-1] > ma20_values[-1]:
-                            print("MA排列: 多頭 (MA5 > MA10 > MA20)")
-                        elif ma5_values[-1] < ma10_values[-1] < ma20_values[-1]:
-                            print("MA排列: 空頭 (MA5 < MA10 < MA20)")
+                        # MA排列分析 (修正版 - 解決邏輯矛盾)
+                        ma_basic = "多頭" if ma5_values[-1] > ma10_values[-1] > ma20_values[-1] else \
+                                  "空頭" if ma5_values[-1] < ma10_values[-1] < ma20_values[-1] else "糾結"
+
+                        # 檢查股價與MA關係
+                        above_all_ma = current_price > ma5_values[-1] and current_price > ma10_values[-1] and current_price > ma20_values[-1]
+                        ma5_deviation = ((current_price - ma5_values[-1]) / ma5_values[-1]) * 100
+
+                        # 綜合判斷 (修正邏輯矛盾)
+                        if ma_basic == "空頭" and above_all_ma:
+                            if ma5_deviation > 20:
+                                print("MA分析: 空頭排列，但股價強勢突破")
+                            else:
+                                print("MA分析: 空頭排列，股價暫時突破")
+                        elif ma_basic == "多頭" and not above_all_ma:
+                            if abs(ma5_deviation) > 10:
+                                print("MA分析: 多頭排列，但股價跌破支撐")
+                            else:
+                                print("MA分析: 多頭排列，股價暫時回檔")
                         else:
-                            print("MA排列: 糾結")
+                            if above_all_ma:
+                                print(f"MA分析: {ma_basic}排列，股價位於MA上方")
+                            else:
+                                print(f"MA分析: {ma_basic}排列")
             
             # RSI
             if len(close_prices) >= 15:
@@ -740,10 +765,32 @@ def analyze_stock_complete(reststock, symbol):
                 macd_data = calculate_macd(close_prices)
                 if macd_data:
                     print(f"\nMACD: DIF:{macd_data['dif']:+.3f} MACD:{macd_data['macd']:+.3f} OSC:{macd_data['osc']:+.3f}")
-                    if macd_data['dif'] > macd_data['macd'] and macd_data['osc'] > 0:
-                        print("MACD訊號: 多頭")
+                    # MACD多空判定 (修正版 - 修正判定邏輯)
+                    dif = macd_data['dif']
+                    macd_val = macd_data['macd']
+                    osc = macd_data['osc']
+
+                    # 分項分析
+                    cross_status = "DIF > MACD" if dif > macd_val else "DIF < MACD"
+                    zero_status = "雙線上方" if dif > 0 and macd_val > 0 else "雙線下方" if dif < 0 and macd_val < 0 else "跨越零軸"
+                    osc_status = "動能向上" if osc > 0 else "動能向下" if osc < 0 else "動能平衡"
+
+                    # 綜合判定 (修正判斷邏輯)
+                    bullish_count = sum([
+                        dif > macd_val,           # 快線站上慢線
+                        dif > 0 and macd_val > 0, # 雙線位於零軸上方
+                        osc > 0                   # OSC為正
+                    ])
+
+                    if bullish_count >= 2:
+                        macd_signal = "多頭"
+                    elif bullish_count == 1:
+                        macd_signal = "偏多"
                     else:
-                        print("MACD訊號: 空頭")
+                        macd_signal = "空頭"
+
+                    print(f"MACD分析: {cross_status} | {zero_status} | {osc_status}")
+                    print(f"MACD訊號: {macd_signal}")
             
             # KD
             if len(close_prices) >= 9:
